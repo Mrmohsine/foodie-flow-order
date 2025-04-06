@@ -7,12 +7,12 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { OrderProvider } from "@/context/OrderContext";
 
 // Page components
-import MenuPage from "./pages/MenuPage";
+import MenuPage from "./pages/MenuPage.jsx";
 import KitchenPage from "./pages/KitchenPage";
 import ReceptionPage from "./pages/ReceptionPage";
 import OwnerPage from "./pages/OwnerPage";
 import SupplierPage from "./pages/SupplierPage";
-import NotFound from "./pages/NotFound";
+import NotFound from "./pages/NotFound.jsx";
 
 const queryClient = new QueryClient();
 
