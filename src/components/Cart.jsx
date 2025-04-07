@@ -1,201 +1,149 @@
 
 import React, { useState } from 'react';
-import { X, Minus, Plus, DollarSign } from 'lucide-react';
+import { X, Minus, Plus, ShoppingCart } from 'lucide-react';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
 import { useOrder } from '@/context/OrderContext';
+import { useToast } from '@/hooks/use-toast';
 
 const Cart = () => {
   const { state, dispatch } = useOrder();
   const { currentOrder, isCartOpen } = state;
   const { toast } = useToast();
-  const [tipPercentage, setTipPercentage] = useState(0);
+  const [tableNumber, setTableNumber] = useState('');
   
-  if (!isCartOpen) return null;
-  
-  const handleUpdateQuantity = (id, quantity) => {
-    dispatch({
-      type: 'UPDATE_QUANTITY',
-      payload: { id, quantity },
-    });
+  const handleCloseCart = () => {
+    dispatch({ type: 'TOGGLE_CART' });
   };
   
-  const handleRemoveItem = (id) => {
-    dispatch({ type: 'REMOVE_FROM_ORDER', payload: id });
+  const handleRemoveItem = (itemId) => {
+    dispatch({ type: 'REMOVE_FROM_ORDER', payload: itemId });
   };
   
-  const handleConfirmOrder = () => {
-    if (!currentOrder || currentOrder.items.length === 0) {
+  const handleUpdateQuantity = (id, newQuantity) => {
+    if (newQuantity > 0) {
+      dispatch({ type: 'UPDATE_QUANTITY', payload: { id, quantity: newQuantity } });
+    } else {
+      dispatch({ type: 'REMOVE_FROM_ORDER', payload: id });
+    }
+  };
+  
+  const handlePlaceOrder = () => {
+    if (!tableNumber) {
       toast({
-        title: "Cannot place empty order",
-        description: "Please add items to your order first",
+        title: "Table number required",
+        description: "Please enter a table number before placing your order",
         variant: "destructive",
       });
       return;
     }
     
-    dispatch({ type: 'CONFIRM_ORDER' });
-    dispatch({ type: 'TOGGLE_CART' });
+    if (currentOrder.items.length === 0) {
+      toast({
+        title: "Empty order",
+        description: "Please add items to your order before proceeding",
+        variant: "destructive",
+      });
+      return;
+    }
     
-    toast({
-      title: "Order Confirmed!",
-      description: "Your order has been sent to the kitchen",
-    });
+    dispatch({ type: 'SET_TABLE', payload: tableNumber });
+    
+    setTimeout(() => {
+      dispatch({ type: 'PLACE_ORDER' });
+      toast({
+        title: "Order placed",
+        description: "Your order has been sent to the kitchen",
+      });
+    }, 100);
   };
   
-  const handleAddTip = (percentage) => {
-    if (!currentOrder) return;
-    
-    setTipPercentage(percentage);
-    
-    const subtotal = currentOrder.items.reduce(
-      (total, item) => total + item.price * item.quantity,
-      0
-    );
-    
-    const tipAmount = subtotal * (percentage / 100);
-    
-    dispatch({
-      type: 'ADD_TIP',
-      payload: tipAmount,
-    });
-  };
-  
-  // Calculate subtotal
-  const subtotal = currentOrder?.items.reduce(
-    (total, item) => total + item.price * item.quantity,
+  const totalAmount = currentOrder.items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
     0
-  ) || 0;
+  );
   
-  const tipAmount = currentOrder?.tipAmount || 0;
-  const total = subtotal + tipAmount;
+  if (!isCartOpen) {
+    return null;
+  }
   
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
-      <div 
-        className="fixed inset-0 bg-black bg-opacity-50"
-        onClick={() => dispatch({ type: 'TOGGLE_CART' })}
-      />
-      <div className="bg-white w-full max-w-md h-full overflow-auto shadow-xl animate-slide-in">
-        <div className="p-4 border-b sticky top-0 bg-white z-10 flex justify-between items-center">
-          <h2 className="text-xl font-bold">Your Order</h2>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => dispatch({ type: 'TOGGLE_CART' })}
-          >
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
+      <div className="bg-white w-full max-w-md h-full flex flex-col">
+        <div className="p-4 border-b flex justify-between items-center">
+          <h2 className="text-xl font-bold flex items-center">
+            <ShoppingCart className="mr-2 h-5 w-5" />
+            Your Order
+          </h2>
+          <Button variant="ghost" size="icon" onClick={handleCloseCart}>
             <X className="h-5 w-5" />
           </Button>
         </div>
         
-        <div className="p-4">
-          {(!currentOrder || currentOrder.items.length === 0) ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500">Your cart is empty</p>
-              <Button 
-                variant="outline" 
-                className="mt-4"
-                onClick={() => dispatch({ type: 'TOGGLE_CART' })}
-              >
-                Browse Menu
-              </Button>
+        <div className="flex-grow overflow-auto p-4">
+          {currentOrder.items.length === 0 ? (
+            <div className="text-center text-gray-500 mt-8">
+              <ShoppingCart className="mx-auto h-12 w-12 text-gray-300" />
+              <p className="mt-2">Your cart is empty</p>
+              <p className="text-sm">Add items from the menu to get started</p>
             </div>
           ) : (
-            <>
-              <div className="space-y-4">
-                {currentOrder.items.map((item) => (
-                  <Card key={item.id} className="overflow-hidden">
-                    <CardHeader className="p-3 pb-0">
-                      <CardTitle className="text-md flex justify-between">
-                        <span>{item.name}</span>
-                        <span>${(item.price * item.quantity).toFixed(2)}</span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-3">
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                          >
-                            <Minus className="h-4 w-4" />
-                          </Button>
-                          <span className="w-8 text-center">{item.quantity}</span>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-gray-500"
-                          onClick={() => handleRemoveItem(item.id)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-              
-              <div className="mt-6">
-                <h3 className="font-semibold mb-2">Add a Tip</h3>
-                <div className="flex space-x-2 mb-4">
-                  {[10, 15, 20].map((percentage) => (
-                    <Button
-                      key={percentage}
-                      variant={tipPercentage === percentage ? "default" : "outline"}
-                      className="flex-1"
-                      onClick={() => handleAddTip(percentage)}
+            <div className="space-y-4">
+              {currentOrder.items.map((item) => (
+                <Card key={item.id} className="p-4 flex items-center">
+                  <div className="flex-grow">
+                    <h3 className="font-medium">{item.name}</h3>
+                    <p className="text-sm text-gray-500">${item.price.toFixed(2)} each</p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="h-8 w-8"
+                      onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
                     >
-                      {percentage}%
+                      <Minus className="h-3 w-3" />
                     </Button>
-                  ))}
-                  <Button
-                    variant={tipPercentage === 0 ? "default" : "outline"}
-                    className="flex-1"
-                    onClick={() => handleAddTip(0)}
-                  >
-                    No Tip
-                  </Button>
-                </div>
-              </div>
-              
-              <div className="mt-6 space-y-2">
-                <div className="flex justify-between">
-                  <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Tip</span>
-                  <span>${tipAmount.toFixed(2)}</span>
-                </div>
-                <Separator className="my-2" />
-                <div className="flex justify-between font-bold">
-                  <span>Total</span>
-                  <span>${total.toFixed(2)}</span>
-                </div>
-              </div>
-              
-              <Button
-                className="w-full mt-6"
-                size="lg"
-                onClick={handleConfirmOrder}
-              >
-                Confirm Order
-              </Button>
-            </>
+                    <span className="w-8 text-center">{item.quantity}</span>
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="h-8 w-8"
+                      onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                    >
+                      <Plus className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </div>
           )}
+        </div>
+        
+        <div className="p-4 border-t">
+          <div className="flex justify-between mb-4">
+            <span className="font-medium">Total</span>
+            <span className="font-bold">${totalAmount.toFixed(2)}</span>
+          </div>
+          
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Table Number</label>
+            <Input 
+              type="text" 
+              placeholder="Enter table number" 
+              value={tableNumber}
+              onChange={(e) => setTableNumber(e.target.value)}
+            />
+          </div>
+          
+          <Button 
+            className="w-full"
+            disabled={currentOrder.items.length === 0}
+            onClick={handlePlaceOrder}
+          >
+            Place Order
+          </Button>
         </div>
       </div>
     </div>
