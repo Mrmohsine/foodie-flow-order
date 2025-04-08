@@ -11,14 +11,15 @@ import {
   deleteDoc
 } from "firebase/firestore";
 
-// Firebase config from env
+// Firebase config with hardcoded values for demo purposes
+// IMPORTANT: In a production app, you would use environment variables
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
+  apiKey: "YOUR_API_KEY", // Replace with your actual Firebase API key
+  authDomain: "your-project-id.firebaseapp.com", // Replace with your actual Firebase auth domain
+  projectId: "your-project-id", // Replace with your actual Firebase project ID
+  storageBucket: "your-project-id.appspot.com", // Replace with your actual Firebase storage bucket
+  messagingSenderId: "your-messaging-sender-id", // Replace with your actual Firebase messaging sender ID
+  appId: "your-app-id" // Replace with your actual Firebase app ID
 };
 
 // Initialize Firebase and Firestore
