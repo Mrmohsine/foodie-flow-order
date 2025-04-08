@@ -1,6 +1,6 @@
 
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
-import { app } from "./firebase"; // Import from our firebase.jsx file
+import { app } from "./firebase"; // Fixed import path to match our file structure
 
 // Initialize Firebase Auth
 const auth = getAuth(app);

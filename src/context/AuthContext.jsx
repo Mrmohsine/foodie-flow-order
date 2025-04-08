@@ -4,9 +4,20 @@ import { auth } from '../lib/firebase-auth';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 
-const AuthContext = createContext();
+// Create the context with a default value that includes all expected properties
+const AuthContext = createContext({
+  currentUser: null,
+  isAuthenticated: false,
+  loading: true
+});
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -30,7 +41,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };

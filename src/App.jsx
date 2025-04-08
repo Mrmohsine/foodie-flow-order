@@ -9,6 +9,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 // Page components
+import Index from "./pages/Index";
 import MenuPage from "./pages/MenuPage.jsx";
 import KitchenPage from "./pages/KitchenPage.jsx";
 import ReceptionPage from "./pages/ReceptionPage.jsx";
@@ -32,9 +33,13 @@ const App = () => (
               {/* Public routes */}
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
+              <Route path="/" element={<Index />} />
               
               {/* Protected routes */}
-              <Route path="/" element={<MenuPage />} />
+              <Route 
+                path="/menu" 
+                element={<MenuPage />} 
+              />
               <Route 
                 path="/kitchen" 
                 element={
