@@ -5,6 +5,8 @@ import { ShoppingCart, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useOrder } from '@/context/OrderContext';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { useAuth } from '@/context/AuthContext';
+import UserProfile from './UserProfile';
 
 const navLinks = [
   { to: '/', label: 'Menu', role: 'customer' },
@@ -18,6 +20,7 @@ const Layout = ({ children }) => {
   const location = useLocation();
   const { state, dispatch } = useOrder();
   const { currentOrder, isCartOpen } = state;
+  const { isAuthenticated } = useAuth();
   
   const itemCount = currentOrder?.items.reduce((acc, item) => acc + item.quantity, 0) || 0;
   
@@ -48,22 +51,38 @@ const Layout = ({ children }) => {
             ))}
           </div>
           
-          {/* Cart button - Only show on menu page */}
-          {location.pathname === '/' && (
-            <Button
-              variant="outline"
-              size="icon"
-              className="relative"
-              onClick={() => dispatch({ type: 'TOGGLE_CART' })}
-            >
-              <ShoppingCart className="h-5 w-5" />
-              {itemCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-foodie-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {itemCount}
-                </span>
-              )}
-            </Button>
-          )}
+          <div className="flex items-center space-x-4">
+            {/* User profile or login/signup */}
+            {isAuthenticated ? (
+              <UserProfile />
+            ) : (
+              <div className="flex space-x-2">
+                <Button variant="ghost" asChild>
+                  <Link to="/login">Login</Link>
+                </Button>
+                <Button asChild>
+                  <Link to="/signup">Sign Up</Link>
+                </Button>
+              </div>
+            )}
+            
+            {/* Cart button - Only show on menu page */}
+            {location.pathname === '/' && (
+              <Button
+                variant="outline"
+                size="icon"
+                className="relative"
+                onClick={() => dispatch({ type: 'TOGGLE_CART' })}
+              >
+                <ShoppingCart className="h-5 w-5" />
+                {itemCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-foodie-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {itemCount}
+                  </span>
+                )}
+              </Button>
+            )}
+          </div>
           
           {/* Mobile menu */}
           <Sheet>
@@ -87,6 +106,17 @@ const Layout = ({ children }) => {
                     {link.label}
                   </Link>
                 ))}
+                
+                {!isAuthenticated && (
+                  <>
+                    <Link to="/login" className="py-2 px-3 rounded-md font-medium text-gray-600 hover:bg-gray-100">
+                      Login
+                    </Link>
+                    <Link to="/signup" className="py-2 px-3 rounded-md font-medium text-gray-600 hover:bg-gray-100">
+                      Sign Up
+                    </Link>
+                  </>
+                )}
               </div>
             </SheetContent>
           </Sheet>
